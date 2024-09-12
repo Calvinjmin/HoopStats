@@ -1,4 +1,5 @@
-from services.player_scraper import PlayerScraper
+from hoopstats import PlayerScraper
+
 
 def main():
     print("NBA Player Stats Fetcher")
@@ -6,12 +7,14 @@ def main():
     while True:
         try:
             # Continuously ask for input
-            name = input("Enter player name or type 'exit' to quit): ").strip().split(" ")
+            name = (
+                input("Enter player name or type 'exit' to quit): ").strip().split(" ")
+            )
             if name[0].lower() == "exit":
                 print("Exiting program.")
                 break
 
-            playerScraper = PlayerScraper( name[0], name[1] )
+            playerScraper = PlayerScraper(name[0], name[1])
 
             stat_type = input(
                 "Enter stat type (e.g., 'per_game', 'totals', 'advanced'): "
