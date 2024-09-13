@@ -22,11 +22,11 @@ def main():
 
             # Fetch and display player stats
             if stat_type:
-                playerScraper.get_stats_by_year(stat_type=stat_type)
+                print(playerScraper.get_stats_by_year(stat_type=stat_type))
             else:
-                playerScraper.get_stats_by_year()
+                print(playerScraper.get_stats_by_year())
 
-            playerScraper.get_game_log_by_year(2024)
+            print(playerScraper.get_game_log_by_year(2024))
         except KeyboardInterrupt:
             print("\nKeyboard exit. Exiting program.")
             break
