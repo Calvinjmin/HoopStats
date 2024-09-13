@@ -1,6 +1,7 @@
 import pandas as pd
-
+import logging
 from typing import Optional
+
 from ..utils.request_utils import get_wrapper
 from ..utils.players_utils import create_player_suffix
 from ..utils.pandas_utils import create_pd_data_frame_from_html
@@ -13,45 +14,66 @@ class PlayerScraper:
         self.suffix = create_player_suffix(first_name, last_name, "01")
         self.url = f"https://www.basketball-reference.com/players/{self.suffix}"
 
-    def get_stats_by_year(self, stat_type: str = "per_game") -> Optional[pd.DataFrame]:
+    def _fetch_and_process(self, endpoint: str, html_id: str) -> Optional[pd.DataFrame]:
         """
-        This function web scraps a player's aggregate stats group by the year
+        Fetches data from a given URL endpoint and processes it into a DataFrame.
 
         Args:
-            stat_type (str, optional): 'per_game' 'totals' and 'advanced' are viable options. Defaults to "per_game".
+            endpoint (str): The endpoint URL to fetch data from.
+            data_type (str): The type of data to process (used in `create_pd_data_frame_from_html`).
 
         Returns:
-            Optional[pd.DataFrame]: Pandas Data Frame
+            Optional[pd.DataFrame]: Pandas Data Frame, or None if an error occurs.
         """
-        if stat_type not in ["per_game", "totals", "advanced"]:
-            print(f"Invalid stat type: {stat_type}")
+        try:
+            r = get_wrapper(endpoint)
+            if r and r.content:
+                return create_pd_data_frame_from_html(r.content, html_id)
+            else:
+                raise ValueError(f"No data available at endpoint: {endpoint}")
+        except Exception as e:
+            logging.error(f"Error fetching data from {endpoint}: {e}")
             return None
 
-        try:
-            r = get_wrapper(self.url + ".html")
-            if r:
-                return create_pd_data_frame_from_html(r.content, stat_type)
-        except Exception as e:
-            print(f"Error fetching stats: {e}")
+    def get_stats_by_year(self, stat_type: str = "per_game") -> Optional[pd.DataFrame]:
+        """
+        Web scrapes a player's aggregate stats grouped by the year.
+
+        Args:
+            stat_type (str, optional): 'per_game', 'totals', and 'advanced' are viable options. Defaults to "per_game".
+
+        Returns:
+            Optional[pd.DataFrame]: Pandas Data Frame.
+        """
+        if stat_type not in ["per_game", "totals", "advanced"]:
+            logging.info(f"Invalid stat type: {stat_type}")
             return None
+
+        endpoint = f"{self.url}.html"
+        return self._fetch_and_process(endpoint, stat_type)
 
     def get_game_log_by_year(self, year: int) -> Optional[pd.DataFrame]:
         """
-        This function web scraps a player's game log based on the year
+        Web scrapes a player's game log based on the year.
 
         Args:
-            year (int): numerical value that represents a year
+            year (int): Numerical value that represents a year.
 
         Returns:
-            Optional[pd.DataFrame]: Pandas Data Frame
+            Optional[pd.DataFrame]: Pandas Data Frame.
         """
-        try:
-            r = get_wrapper(f"{self.url}/gamelog/{year}")
-            if r:
-                return create_pd_data_frame_from_html(r.content, "pgl_basic")
-            else:
-                print(f"Failed to retrieve game log for {year}")
-                return None
-        except Exception as e:
-            print(f"Error fetching game log: {e} - Maybe an invalid year - {year}")
-            return None
+        endpoint = f"{self.url}/gamelog/{year}"
+        return self._fetch_and_process(endpoint, "pgl_basic")
+
+    def get_splits_by_year(self, year: int) -> Optional[pd.DataFrame]:
+        """
+        Web scrapes a player's splits based on the year.
+
+        Args:
+            year (int): Numerical value that represents a year.
+
+        Returns:
+            Optional[pd.DataFrame]: Pandas Data Frame.
+        """
+        endpoint = f"{self.url}/splits/{year}"
+        return self._fetch_and_process(endpoint, "splits")

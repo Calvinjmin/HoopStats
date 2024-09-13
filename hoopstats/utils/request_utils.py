@@ -1,20 +1,21 @@
-from .decorator_utils import timeout
+import logging
 
+from .decorator_utils import timeout
 from requests import get, Response
 from typing import Optional
-from requests.exceptions import RequestException
+from requests.exceptions import HTTPError
 
 
 @timeout(seconds=10)
 def get_wrapper(url: str) -> Optional[Response]:
     """
-    Requests.Get() Wrapper with a timeout 
+    Requests.Get() Wrapper with a timeout
 
     Args:
-        url (str): GET Url 
+        url (str): GET Url
 
     Returns:
-        Optional[Response]: Response Object if status is 200 
+        Optional[Response]: Response Object if status is 200
     """
     try:
         response = get(url)
@@ -22,8 +23,8 @@ def get_wrapper(url: str) -> Optional[Response]:
         if response.status_code == 200:
             return response
         else:
-            print(f"Non-200 status code received: {response.status_code}")
+            logging.error(f"Non-200 status code received: {response.status_code}")
             return None
-    except RequestException as e:
-        print(f"Request failed: {e}")
+    except HTTPError as e:
+        logging.error(f"Request failed: {e}")
         return None

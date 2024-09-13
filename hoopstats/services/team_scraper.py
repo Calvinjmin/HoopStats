@@ -1,4 +1,6 @@
 import pandas as pd
+import logging
+from typing import Optional
 
 from ..utils.request_utils import get_wrapper
 from ..utils.pandas_utils import create_pd_data_frame_from_html
@@ -6,36 +8,51 @@ from ..utils.team_utils import TEAM_ABBREVIATIONS
 
 
 class TeamScraper:
-    def __init__(self, team_name) -> None:
+    def __init__(self, team_name: str) -> None:
         self.team_name = team_name
-        self.abbreviation = TEAM_ABBREVIATIONS[self.team_name]
+        self.abbreviation = TEAM_ABBREVIATIONS.get(self.team_name)
+        if not self.abbreviation:
+            raise ValueError(f"Team abbreviation not found for team name: {team_name}")
         self.url = f"https://www.basketball-reference.com/teams/{self.abbreviation}"
 
-    def team_stats_by_year(self, table_type: str, year: int) -> pd.DataFrame:
+    def _fetch_and_process(self, endpoint: str, html_id: str) -> Optional[pd.DataFrame]:
         """
-        Given a dynamic variable, compute a pandas Data Frame for a given team
+        Fetches data from a given URL endpoint and processes it into a DataFrame.
 
         Args:
-            table_type (str): table type associated on the website 
-            year (int): year 
+            endpoint (str): The endpoint URL to fetch data from.
+            table_type (str): The type of data to process (used in `create_pd_data_frame_from_html`).
 
         Returns:
-            pd.DataFrame: Pandas DataFrame 
+            Optional[pd.DataFrame]: Pandas Data Frame, or None if an error occurs.
         """
-        
-        # Valid Stat Options
-        valid_stats = ["roster"]
-        if table_type not in valid_stats:
-            print(f"Input was an invalid stat. Try one of these: {valid_stats}")
+        try:
+            r = get_wrapper(endpoint)
+            if r and r.content:
+                return create_pd_data_frame_from_html(r.content, html_id)
+            else:
+                raise ValueError(f"No data available at endpoint: {endpoint}")
+        except Exception as e:
+            logging.error(f"Error fetching data from {endpoint}: {e}")
             return None
 
-        try:
-            r = get_wrapper(f"{self.url}/{year}.html")
-            if r:
-                return create_pd_data_frame_from_html(r.content, table_type)
-            else:
-                print(f"Failed to retrieve game log for {year}")
-                return None
-        except Exception as e:
-            print(f"Error fetching game log: {e}")
+    def team_stats_by_year(self, table_type: str, year: int) -> Optional[pd.DataFrame]:
+        """
+        Given a dynamic variable, compute a pandas Data Frame for a given team.
+
+        Args:
+            table_type (str): Table type associated on the website.
+            year (int): Year.
+
+        Returns:
+            Optional[pd.DataFrame]: Pandas DataFrame, or None if an error occurs.
+        """
+        valid_stats = ["roster"]
+        if table_type not in valid_stats:
+            logging.error(
+                f"Invalid table type: {table_type}. Try one of these: {valid_stats}"
+            )
             return None
+
+        endpoint = f"{self.url}/{year}.html"
+        return self._fetch_and_process(endpoint, table_type)
