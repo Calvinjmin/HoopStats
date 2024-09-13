@@ -1,4 +1,3 @@
-import pytest
 from hoopstats import create_player_suffix
 
 def test_create_player_suffix_valid_name():

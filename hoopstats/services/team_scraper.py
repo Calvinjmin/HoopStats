@@ -16,13 +16,13 @@ class TeamScraper:
         Given a dynamic variable, compute a pandas Data Frame for a given team
 
         Args:
-            table_type (str): table type associated on the website 
-            year (int): year 
+            table_type (str): table type associated on the website
+            year (int): year
 
         Returns:
-            pd.DataFrame: Pandas DataFrame 
+            pd.DataFrame: Pandas DataFrame
         """
-        
+
         # Valid Stat Options
         valid_stats = ["roster"]
         if table_type not in valid_stats:

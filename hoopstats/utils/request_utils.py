@@ -8,13 +8,13 @@ from requests.exceptions import RequestException
 @timeout(seconds=10)
 def get_wrapper(url: str) -> Optional[Response]:
     """
-    Requests.Get() Wrapper with a timeout 
+    Requests.Get() Wrapper with a timeout
 
     Args:
-        url (str): GET Url 
+        url (str): GET Url
 
     Returns:
-        Optional[Response]: Response Object if status is 200 
+        Optional[Response]: Response Object if status is 200
     """
     try:
         response = get(url)
