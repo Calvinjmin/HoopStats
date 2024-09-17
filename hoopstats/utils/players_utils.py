@@ -16,7 +16,7 @@ def create_player_suffix(first_name: str, last_name: str, unique_id: str) -> str
     if len(last_name) > 1:
         last_name_prefix = last_name[0].lower()
     else:
-        last_name_prefix = ''
+        last_name_prefix = ""
 
     # Process first name
     first_name_part = first_name[:2].lower()
