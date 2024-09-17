@@ -3,15 +3,24 @@ import logging
 from typing import Optional
 
 from ..utils.request_utils import get_wrapper
-from ..utils.players_utils import create_player_suffix
+from ..utils.players_utils import create_player_suffix, auto_correct_player_name
 from ..utils.pandas_utils import create_pd_data_frame_from_html
 
 
 class PlayerScraper:
     def __init__(self, first_name: str, last_name: str):
-        self.first_name = first_name
-        self.last_name = last_name
-        self.suffix = create_player_suffix(first_name, last_name, "01")
+        try:
+            name = auto_correct_player_name(first_name=first_name, last_name=last_name)
+            if name is None:
+                raise ValueError(f"No match found for: {first_name} {last_name}")
+        except Exception as e:
+            logging.error(f"Error in auto correcting player name: {e}")
+            raise
+
+        self.first_name = name[0]
+        self.last_name = name[1]
+
+        self.suffix = create_player_suffix(self.first_name, self.last_name, "01")
         self.url = f"https://www.basketball-reference.com/players/{self.suffix}"
 
     def _fetch_and_process(self, endpoint: str, html_id: str) -> Optional[pd.DataFrame]:
