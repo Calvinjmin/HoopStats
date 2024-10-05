@@ -1,10 +1,11 @@
 import pandas as pd
 import logging
+import matplotlib.pyplot as plt
 from typing import Optional
 
 from ..utils.request_utils import get_wrapper
 from ..utils.players_utils import create_player_suffix, auto_correct_player_name
-from ..utils.pandas_utils import create_pd_data_frame_from_html
+from ..utils.pandas_utils import create_pd_data_frame_from_html_table
 
 
 class PlayerScraper:
@@ -29,7 +30,7 @@ class PlayerScraper:
 
         Args:
             endpoint (str): The endpoint URL to fetch data from.
-            data_type (str): The type of data to process (used in `create_pd_data_frame_from_html`).
+            data_type (str): The type of data to process (used in `create_pd_data_frame_from_html_table`).
 
         Returns:
             Optional[pd.DataFrame]: Pandas Data Frame, or None if an error occurs.
@@ -37,7 +38,7 @@ class PlayerScraper:
         try:
             r = get_wrapper(endpoint)
             if r and r.content:
-                return create_pd_data_frame_from_html(r.content, html_id)
+                return create_pd_data_frame_from_html_table(r.content, html_id)
             else:
                 raise ValueError(f"No data available at endpoint: {endpoint}")
         except Exception as e:
@@ -60,6 +61,35 @@ class PlayerScraper:
 
         endpoint = f"{self.url}.html"
         return self._fetch_and_process(endpoint, stat_type)
+
+    def get_stats_by_year_visualization(
+        self, stat_type: str = "per_game"
+    ) -> Optional[plt.Figure]:
+        """
+        Visualizes a player's statistics for a given stat type by season in a bar chart.
+
+        Args:
+            stat_type (str): The type of statistics to fetch and visualize (e.g., 'per_game', 'totals', 'advanced').
+                            Defaults to 'per_game'.
+
+        Returns:
+            Optional[plt.Figure]: Matplotlib Figure object containing the plot if data exists, or None if the data frame is empty.
+        """
+        data_frame = self.get_stats_by_year(stat_type=stat_type)
+        if data_frame.empty:
+            logging.error(
+                f"No data available to visualize for {self.first_name} {self.last_name} in this stat: {stat_type}"
+            )
+            return None
+        else:
+            data_frame.plot(kind="bar", x="Season", y="PTS", figsize=(10, 6))
+            plt.title(
+                f"{self.first_name} {self.last_name} - {stat_type.capitalize()} Stats"
+            )
+            plt.xlabel("Season")
+            plt.ylabel("PTS")
+            plt.tight_layout()
+            return plt
 
     def get_game_log_by_year(self, year: int) -> Optional[pd.DataFrame]:
         """

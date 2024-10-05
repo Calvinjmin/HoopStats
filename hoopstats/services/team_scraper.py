@@ -3,7 +3,7 @@ import logging
 from typing import Optional
 
 from ..utils.request_utils import get_wrapper
-from ..utils.pandas_utils import create_pd_data_frame_from_html
+from ..utils.pandas_utils import create_pd_data_frame_from_html_table
 from ..utils.team_utils import TEAM_ABBREVIATIONS
 
 
@@ -21,7 +21,7 @@ class TeamScraper:
 
         Args:
             endpoint (str): The endpoint URL to fetch data from.
-            table_type (str): The type of data to process (used in `create_pd_data_frame_from_html`).
+            table_type (str): The type of data to process (used in `create_pd_data_frame_from_html_table`).
 
         Returns:
             Optional[pd.DataFrame]: Pandas Data Frame, or None if an error occurs.
@@ -29,14 +29,16 @@ class TeamScraper:
         try:
             r = get_wrapper(endpoint)
             if r and r.content:
-                return create_pd_data_frame_from_html(r.content, html_id)
+                return create_pd_data_frame_from_html_table(r.content, html_id)
             else:
                 raise ValueError(f"No data available at endpoint: {endpoint}")
         except Exception as e:
             logging.error(f"Error fetching data from {endpoint}: {e}")
             return None
 
-    def team_stats_by_year(self, table_type: str, year: int) -> Optional[pd.DataFrame]:
+    def get_team_stats_by_year(
+        self, table_type: str, year: int
+    ) -> Optional[pd.DataFrame]:
         """
         Given a dynamic variable, compute a pandas Data Frame for a given team.
 
