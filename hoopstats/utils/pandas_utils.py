@@ -4,7 +4,9 @@ from bs4 import BeautifulSoup
 from io import StringIO
 
 
-def create_pd_data_frame_from_html(html_content: str, html_id: str) -> pd.DataFrame:
+def create_pd_data_frame_from_html_table(
+    html_content: str, html_id: str
+) -> pd.DataFrame:
     """
     This function takes in html table content and produces a pandas data frame
 

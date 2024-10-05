@@ -5,7 +5,7 @@ import unicodedata
 from typing import List
 from rapidfuzz import process
 from .request_utils import get_wrapper
-from .pandas_utils import create_pd_data_frame_from_html
+from .pandas_utils import create_pd_data_frame_from_html_table
 
 # --- Global Variables --- #
 active_players = []
@@ -41,7 +41,9 @@ def scrape_active_players() -> None:
     try:
         response = get_wrapper(active_player_url)
         if response and response.content:
-            df = create_pd_data_frame_from_html(response.content, "per_game_stats")
+            df = create_pd_data_frame_from_html_table(
+                response.content, "per_game_stats"
+            )
 
             # Clean and process the DataFrame
             df = df[

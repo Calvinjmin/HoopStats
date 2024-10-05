@@ -1,11 +1,11 @@
 import pandas as pd
 import logging
-from typing import Optional
 import matplotlib.pyplot as plt
+from typing import Optional
 
 from ..utils.request_utils import get_wrapper
 from ..utils.players_utils import create_player_suffix, auto_correct_player_name
-from ..utils.pandas_utils import create_pd_data_frame_from_html
+from ..utils.pandas_utils import create_pd_data_frame_from_html_table
 
 
 class PlayerScraper:
@@ -30,7 +30,7 @@ class PlayerScraper:
 
         Args:
             endpoint (str): The endpoint URL to fetch data from.
-            data_type (str): The type of data to process (used in `create_pd_data_frame_from_html`).
+            data_type (str): The type of data to process (used in `create_pd_data_frame_from_html_table`).
 
         Returns:
             Optional[pd.DataFrame]: Pandas Data Frame, or None if an error occurs.
@@ -38,7 +38,7 @@ class PlayerScraper:
         try:
             r = get_wrapper(endpoint)
             if r and r.content:
-                return create_pd_data_frame_from_html(r.content, html_id)
+                return create_pd_data_frame_from_html_table(r.content, html_id)
             else:
                 raise ValueError(f"No data available at endpoint: {endpoint}")
         except Exception as e:
